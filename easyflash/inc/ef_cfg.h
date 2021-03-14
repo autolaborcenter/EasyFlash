@@ -29,6 +29,11 @@
 #ifndef EF_CFG_H_
 #define EF_CFG_H_
 
+#include "stm32f1xx_hal.h"
+
+#define SIZE_BYTE_1K                            1024 //用于参数配置提高可读性
+#define PAGE_SIZE                               (2*SIZE_BYTE_1K)//定义页大小
+
 /* using ENV function, default is NG (Next Generation) mode start from V4.0 */
 #define EF_USING_ENV
 
@@ -39,7 +44,7 @@
  * ENV version number defined by user.
  * Please change it when your firmware add a new ENV to default_env_set.
  */
-#define EF_ENV_VER_NUM            /* @note you must define it for a value, such as 0 */
+#define EF_ENV_VER_NUM            4 /* @note you must define it for a value, such as 0 */
  
 /* MCU Endian Configuration, default is Little Endian Order. */
 /* #define EF_BIG_ENDIAN  */         
@@ -47,17 +52,17 @@
 #endif /* EF_USING_ENV */
 
 /* using IAP function */
-/* #define EF_USING_IAP */
+#define EF_USING_IAP
 
 /* using save log function */
-/* #define EF_USING_LOG */
+#define EF_USING_LOG
 
 /* The minimum size of flash erasure. May be a flash sector size. */
-#define EF_ERASE_MIN_SIZE         /* @note you must define it for a value */
+#define EF_ERASE_MIN_SIZE         PAGE_SIZE	/* @note you must define it for a value */
 
 /* the flash write granularity, unit: bit
  * only support 1(nor flash)/ 8(stm32f4)/ 32(stm32f1) */
-#define EF_WRITE_GRAN             /* @note you must define it for a value */
+#define EF_WRITE_GRAN             32	/* @note you must define it for a value */
 
 /*
  *
@@ -80,14 +85,15 @@
  *   If you want use it please using the V3.X version.
  */
 
+
 /* backup area start address */
-#define EF_START_ADDR             /* @note you must define it for a value */
+#define EF_START_ADDR             (FLASH_BASE + (240 * SIZE_BYTE_1K)) /* @note you must define it for a value */
 
 /* ENV area size. It's at least one empty sector for GC. So it's definition must more then or equal 2 flash sector size. */
-#define ENV_AREA_SIZE             /* @note you must define it for a value if you used ENV */
+#define ENV_AREA_SIZE             (8*SIZE_BYTE_1K)	/* @note you must define it for a value if you used ENV */
 
 /* saved log area size */
-#define LOG_AREA_SIZE             /* @note you must define it for a value if you used log */
+#define LOG_AREA_SIZE             (8*SIZE_BYTE_1K)	/* @note you must define it for a value if you used log */
 
 /* print debug information of flash */
 #define PRINT_DEBUG
