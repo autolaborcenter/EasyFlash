@@ -32,7 +32,10 @@
 #include "stm32f1xx_hal.h"
 
 #define SIZE_BYTE_1K                            1024 //用于参数配置提高可读性
+
+#ifdef STM32F107xC
 #define PAGE_SIZE                               (2*SIZE_BYTE_1K)//定义页大小
+#endif
 
 /* using ENV function, default is NG (Next Generation) mode start from V4.0 */
 #define EF_USING_ENV
@@ -90,10 +93,10 @@
 #define EF_START_ADDR             (FLASH_BASE + (240 * SIZE_BYTE_1K)) /* @note you must define it for a value */
 
 /* ENV area size. It's at least one empty sector for GC. So it's definition must more then or equal 2 flash sector size. */
-#define ENV_AREA_SIZE             (8*SIZE_BYTE_1K)	/* @note you must define it for a value if you used ENV */
+#define ENV_AREA_SIZE             (4*PAGE_SIZE)	/* @note you must define it for a value if you used ENV */
 
 /* saved log area size */
-#define LOG_AREA_SIZE             (8*SIZE_BYTE_1K)	/* @note you must define it for a value if you used log */
+#define LOG_AREA_SIZE             (4*PAGE_SIZE)	/* @note you must define it for a value if you used log */
 
 /* print debug information of flash */
 #define PRINT_DEBUG

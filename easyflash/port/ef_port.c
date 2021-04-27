@@ -29,8 +29,10 @@
 #include <easyflash.h>
 #include <stdarg.h>
 
+static uint32_t boot_counter = 0;
 /* default environment variables set for user */
 static const ef_env default_env_set[] = {
+        {"boot_counter",&boot_counter,sizeof(boot_counter)},
 
 };
 
@@ -66,6 +68,12 @@ EfErrCode ef_port_read(uint32_t addr, uint32_t *buf, size_t size) {
 
     /* You can add your code under here. */
 
+    uint8_t *buf_8 = (uint8_t *)buf;
+    for ( size_t i = 0; i < size; i++, addr ++, buf_8++)
+    {
+      *buf_8 = *(uint8_t *) addr;
+    }
+
     return result;
 }
 
@@ -87,6 +95,29 @@ EfErrCode ef_port_erase(uint32_t addr, size_t size) {
 
     /* You can add your code under here. */
 
+
+    size_t erase_pages;
+  static FLASH_EraseInitTypeDef EraseInitStruct;
+  uint32_t SECTORError = 0;
+  
+    /* calculate pages */
+    erase_pages = size / PAGE_SIZE;
+    if (size % PAGE_SIZE != 0) {
+        erase_pages++;
+    }
+    
+    HAL_FLASH_Unlock();
+  EraseInitStruct.TypeErase = FLASH_TYPEERASE_PAGES;
+  EraseInitStruct.PageAddress = addr;
+  EraseInitStruct.NbPages = erase_pages;
+  
+    /* start erase */
+    if (HAL_FLASHEx_Erase(&EraseInitStruct, &SECTORError) != HAL_OK) {
+        result = EF_ERASE_ERR;
+    }
+
+    HAL_FLASH_Lock();
+
     return result;
 }
 /**
@@ -105,6 +136,24 @@ EfErrCode ef_port_write(uint32_t addr, const uint32_t *buf, size_t size) {
     
     /* You can add your code under here. */
 
+    size_t i;
+    uint32_t read_data;
+
+    HAL_FLASH_Unlock();
+    for (i = 0; i < size; i += 4, buf++, addr += 4)
+    {
+      /* write data */
+      HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, addr, *buf);
+      read_data = *(uint32_t *)addr;
+      /* check data */
+      if (read_data != *buf)
+      {
+        result = EF_WRITE_ERR;
+        break;
+      }
+    }
+   HAL_FLASH_Lock();
+
     return result;
 }
 
@@ -114,6 +163,7 @@ EfErrCode ef_port_write(uint32_t addr, const uint32_t *buf, size_t size) {
 void ef_port_env_lock(void) {
     
     /* You can add your code under here. */
+    __disable_irq();
     
 }
 
@@ -123,6 +173,7 @@ void ef_port_env_lock(void) {
 void ef_port_env_unlock(void) {
     
     /* You can add your code under here. */
+    __enable_irq();
     
 }
 
